@@ -1,1 +1,1 @@
-{"dependencies":[]}
+{"dependencies":[{"name":"Command","gitUrl":"https://github.com/Meme-Time-Games/UP-Command.git"},{"name":"CommandQueue","gitUrl":"https://github.com/Meme-Time-Games/UP-CommandQueue.git"},{"name":"Singleton","gitUrl":"https://github.com/LaloBerro/UPM-Singleton.git"},{"name":"DependencyInjector","gitUrl":"https://github.com/LaloBerro/UPM-DependencyInjector.git"},{"name":"ServiceLocator","gitUrl":"https://github.com/LaloBerro/UPM-ServiceLocator.git"}]}
