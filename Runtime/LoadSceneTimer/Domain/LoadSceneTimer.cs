@@ -1,25 +1,26 @@
 using System;
+using System.Collections;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ScenesLoaderSystem
 {
-    public class LoadSceneTimer
+    public class LoadSceneTimer : MonoBehaviour
     {
-        private readonly ISceneDataLoader _sceneDataLoader;
-        private readonly int _duration;
+        private ISceneDataLoader _sceneDataLoader;
+        private int _duration;
 
-        public LoadSceneTimer(int duration, ISceneDataLoader sceneDataLoader)
+        public void Install(int duration, ISceneDataLoader sceneDataLoader)
         {
             _duration = duration;
             _sceneDataLoader = sceneDataLoader;
 
-            Execute();
+            StartCoroutine(Timer());
         }
 
-        private async void Execute()
+        public IEnumerator Timer()
         {
-            await Task.Delay(TimeSpan.FromSeconds(_duration));
-
+            yield return new WaitForSeconds(_duration);
             _sceneDataLoader.Load();
         }
     }

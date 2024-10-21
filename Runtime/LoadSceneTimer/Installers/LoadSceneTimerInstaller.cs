@@ -14,7 +14,9 @@ namespace ScenesLoaderSystem
         
         public override void Install(IDIContainer diContainer)
         {
-            new LoadSceneTimer(_duration, _sceneDataLoader);
+            LoadSceneTimer loadSceneTimer = new GameObject("LoadSceneTimer").AddComponent<LoadSceneTimer>();
+            loadSceneTimer.Install(_duration, _sceneDataLoader);
+            loadSceneTimer.transform.SetParent(transform);
         }
     }
 }
