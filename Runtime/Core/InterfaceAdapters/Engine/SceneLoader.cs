@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using CommandQueues.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,6 +17,8 @@ namespace ScenesLoaderSystem.Core.Domain
         private Queue<SceneData> _scenesToOpenQueue;
         private List<INodeCommand> _nodeCommands;
         private CommandQueue _commandQueue;
+        private WaitForEndOfFrame _waitForEndOfFrame;
+        private WaitForSeconds _waitForOneSecond;
 
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesAreLoaded { get; set; }
@@ -26,6 +27,8 @@ namespace ScenesLoaderSystem.Core.Domain
         {
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;
+            _waitForEndOfFrame = new WaitForEndOfFrame();
+            _waitForOneSecond = new WaitForSeconds(1);
 
             _openScenes.Add(firstOpenSceneData);
         }
@@ -180,18 +183,22 @@ namespace ScenesLoaderSystem.Core.Domain
             _openScenes.Add(sceneData);
         }
 
-        public async void SetNodeCommandOfALoadedScene(INodeCommand nodeCommand)
+        public void SetNodeCommandOfALoadedScene(INodeCommand nodeCommand)
         {
-            //Added for security reasons because not always load the scene correctly, so we need to wait the main thread
-            await Task.Delay(10);
-
+            StartCoroutine(SetNodeCommandOfALoadedSceneCoroutine(nodeCommand));
+        }
+        
+        public IEnumerator SetNodeCommandOfALoadedSceneCoroutine(INodeCommand nodeCommand)
+        {
+            yield return _waitForEndOfFrame;
+            
             if (nodeCommand != null)
                 _nodeCommands.Add(nodeCommand);
 
             if (_scenesToOpenQueue.Count <= 0)
             {
                 InitializeScenes();
-                return;
+                yield break;
             }
 
             OpenNextScene();
@@ -210,19 +217,24 @@ namespace ScenesLoaderSystem.Core.Domain
             _commandQueue.Execute();
         }
 
-        private async void AllSceneLoaded()
+        private void AllSceneLoaded()
+        {
+            StartCoroutine(AllSceneLoadedCoroutine());
+        }
+
+        public IEnumerator AllSceneLoadedCoroutine()
         {
             if (_commandQueue != null)
                 _commandQueue.OnExecutionDone -= AllSceneLoaded;
 
             OnTransitionSceneStartUnloaded?.Invoke();
-            
-            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            yield return _waitForOneSecond;
             
             SetPrincipalScene();
 
             //Added for security reasons because not always load the scene correctly, so we need to wait the main thread
-            await Task.Delay(10);
+            yield return _waitForEndOfFrame;
 
             UnloadTransitionScenes();
 
