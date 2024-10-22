@@ -19,6 +19,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private CommandQueue _commandQueue;
         private WaitForEndOfFrame _waitForEndOfFrame;
         private WaitForSeconds _waitForOneSecond;
+        private WaitForSeconds _waitForTwoSeconds;
 
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesAreLoaded { get; set; }
@@ -29,6 +30,7 @@ namespace ScenesLoaderSystem.Core.Domain
             _emptySceneData = emptySceneData;
             _waitForEndOfFrame = new WaitForEndOfFrame();
             _waitForOneSecond = new WaitForSeconds(1);
+            _waitForTwoSeconds = new WaitForSeconds(2);
 
             _openScenes.Add(firstOpenSceneData);
         }
@@ -229,12 +231,12 @@ namespace ScenesLoaderSystem.Core.Domain
 
             OnTransitionSceneStartUnloaded?.Invoke();
 
-            yield return _waitForOneSecond;
+            yield return _waitForTwoSeconds;
             
             SetPrincipalScene();
 
             //Added for security reasons because not always load the scene correctly, so we need to wait the main thread
-            yield return _waitForEndOfFrame;
+            yield return _waitForOneSecond;
 
             UnloadTransitionScenes();
 
