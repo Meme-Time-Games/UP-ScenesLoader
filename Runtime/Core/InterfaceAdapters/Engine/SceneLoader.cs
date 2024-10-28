@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using CommandQueues.Core;
+using MVVM.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,6 +12,7 @@ namespace ScenesLoaderSystem.Core.Domain
     {
         private SceneData _loadingScreenSceneData;
         private SceneData _emptySceneData;
+        private IEventViewModel _eventViewModel;
 
         private SceneData _currentSceneData;
         private List<SceneData> _openScenes = new List<SceneData>();
@@ -20,14 +22,16 @@ namespace ScenesLoaderSystem.Core.Domain
         private WaitForEndOfFrame _waitForEndOfFrame;
         private WaitForSeconds _waitForOneSecond;
         private WaitForSeconds _waitForTwoSeconds;
-
+        
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesAreLoaded { get; set; }
 
-        public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData)
+        public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData, IEventViewModel eventViewModel)
         {
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;
+            _eventViewModel = eventViewModel;
+            
             _waitForEndOfFrame = new WaitForEndOfFrame();
             _waitForOneSecond = new WaitForSeconds(1);
             _waitForTwoSeconds = new WaitForSeconds(2);
