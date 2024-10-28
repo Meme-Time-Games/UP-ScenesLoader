@@ -243,6 +243,8 @@ namespace ScenesLoaderSystem.Core.Domain
             yield return _waitForOneSecond;
 
             UnloadTransitionScenes();
+            
+            _eventViewModel.RaiseEvent();
 
             OnAllScenesAreLoaded?.Invoke();
         }
