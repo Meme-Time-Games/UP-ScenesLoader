@@ -207,7 +207,6 @@ namespace ScenesLoaderSystem.Core.Domain
         private IEnumerator SetNodeCommandOfALoadedSceneCoroutine(INodeCommand nodeCommand)
         {
             _loadingProgress += _loadingPercentagePerScene;
-            Debug.Log(_loadingProgress);
             
             yield return _waitForEndOfFrame;
             

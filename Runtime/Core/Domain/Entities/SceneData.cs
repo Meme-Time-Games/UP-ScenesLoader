@@ -32,7 +32,7 @@ namespace ScenesLoaderSystem.Core.Domain
             _isPrincipal = isPrincipal;
             _hasToCloseOthersScenes = hasToCloseOthersScenes;
             _hasToKeepOpen = hasToKeepOpen;
-            this._scenesDataToOpen = scenesDataToOpen;
+            _scenesDataToOpen = scenesDataToOpen;
             _scenesDataToRemove = scenesDataToRemove;
         }
 
@@ -51,8 +51,6 @@ namespace ScenesLoaderSystem.Core.Domain
 
                     scenesToOpen.Add(sceneDataInto);
                 }
-
-                scenesToOpen.Add(sceneData);
             }
 
             scenesToOpen.Add(this);
