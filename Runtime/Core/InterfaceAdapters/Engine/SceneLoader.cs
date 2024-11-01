@@ -21,7 +21,10 @@ namespace ScenesLoaderSystem.Core.Domain
         private CommandQueue _commandQueue;
         private WaitForEndOfFrame _waitForEndOfFrame;
         private WaitForSeconds _waitForOneSecond;
-        private WaitForSeconds _waitForTwoSeconds;
+        
+        private float _loadingProgress;
+        private bool _isLoading;
+        private float _loadingPercentagePerScene;
         
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesAreLoaded { get; set; }
@@ -33,8 +36,7 @@ namespace ScenesLoaderSystem.Core.Domain
             _eventViewModel = eventViewModel;
             
             _waitForEndOfFrame = new WaitForEndOfFrame();
-            _waitForOneSecond = new WaitForSeconds(1);
-            _waitForTwoSeconds = new WaitForSeconds(2);
+            _waitForOneSecond = new WaitForSeconds(0.5f);
 
             _openScenes.Add(firstOpenSceneData);
         }
@@ -46,7 +48,7 @@ namespace ScenesLoaderSystem.Core.Domain
 
         public IEnumerator RemoveCurrentAndSetPrincipalAsync(SceneData currentSceneData)
         {
-            yield return StartCoroutine(LoadLoadingScreenAsync());
+            yield return StartCoroutine(LoadLoadingScreen());
 
             yield return StartCoroutine(RemoveScene(_currentSceneData));
             _openScenes.Remove(_currentSceneData);
@@ -54,6 +56,36 @@ namespace ScenesLoaderSystem.Core.Domain
             _currentSceneData = currentSceneData;
 
             AllSceneLoaded();
+        }
+        
+        private IEnumerator LoadLoadingScreen()
+        {
+            if (_currentSceneData.HasToUseLoadingScreen == false)
+                yield break;
+            
+            if(_isLoading)
+                yield break;
+
+            _isLoading = true;
+            
+            yield return StartCoroutine(LoadSceneAsync(_loadingScreenSceneData.SceneName));
+
+            yield return new WaitForEndOfFrame();
+        }
+        
+        private IEnumerator LoadEmptyScreenAsync()
+        {
+            yield return StartCoroutine(LoadSceneAsync(_emptySceneData.SceneName));
+        }
+        
+        private IEnumerator LoadSceneAsync(string sceneName)
+        {
+            AsyncOperation loadLoadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
+            while (!loadLoadingOperation.isDone)
+            {
+                yield return null;
+            }
         }
 
         public void LoadScene(SceneData sceneData, bool dontRemoveOpenScenes = false)
@@ -64,12 +96,13 @@ namespace ScenesLoaderSystem.Core.Domain
             StartCoroutine(LoadSceneAsync(sceneData, dontRemoveOpenScenes));
         }
 
-        public IEnumerator LoadSceneAsync(SceneData sceneData, bool dontRemoveOpenScenes = false)
+        private IEnumerator LoadSceneAsync(SceneData sceneData, bool dontRemoveOpenScenes = false)
         {
             _currentSceneData = sceneData;
+            _loadingProgress = 0;
             
             if(sceneData.HasToUseLoadingScreen)
-                yield return StartCoroutine(LoadLoadingScreenAsync());
+                yield return StartCoroutine(LoadLoadingScreen());
             else
                 yield return StartCoroutine(LoadEmptyScreenAsync());
 
@@ -108,31 +141,6 @@ namespace ScenesLoaderSystem.Core.Domain
                 yield return null;
             }
         }
-        
-        private IEnumerator LoadLoadingScreenAsync()
-        {
-            if (_currentSceneData.HasToUseLoadingScreen == false)
-                yield return null;
-
-            yield return StartCoroutine(LoadSceneAsync(_loadingScreenSceneData.SceneName));
-
-            yield return new WaitForEndOfFrame();
-        }
-        
-        private IEnumerator LoadEmptyScreenAsync()
-        {
-            yield return StartCoroutine(LoadSceneAsync(_emptySceneData.SceneName));
-        }
-        
-        private IEnumerator LoadSceneAsync(string sceneName)
-        {
-            AsyncOperation loadLoadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-
-            while (!loadLoadingOperation.isDone)
-            {
-                yield return null;
-            }
-        }
 
         private IEnumerator RemoveScenesFromCurrentSceneData()
         {
@@ -154,6 +162,8 @@ namespace ScenesLoaderSystem.Core.Domain
         private void OpenScenes()
         {
             SceneData[] scenesToLoad = _currentSceneData.GetAllScenesToOpen();
+            
+            _loadingPercentagePerScene = 1f / scenesToLoad.Length;
             _scenesToOpenQueue = new Queue<SceneData>();
             _nodeCommands = new List<INodeCommand>();
 
@@ -193,9 +203,12 @@ namespace ScenesLoaderSystem.Core.Domain
         {
             StartCoroutine(SetNodeCommandOfALoadedSceneCoroutine(nodeCommand));
         }
-        
-        public IEnumerator SetNodeCommandOfALoadedSceneCoroutine(INodeCommand nodeCommand)
+
+        private IEnumerator SetNodeCommandOfALoadedSceneCoroutine(INodeCommand nodeCommand)
         {
+            _loadingProgress += _loadingPercentagePerScene;
+            Debug.Log(_loadingProgress);
+            
             yield return _waitForEndOfFrame;
             
             if (nodeCommand != null)
@@ -230,12 +243,14 @@ namespace ScenesLoaderSystem.Core.Domain
 
         public IEnumerator AllSceneLoadedCoroutine()
         {
+            _loadingProgress = 1;
+            
             if (_commandQueue != null)
                 _commandQueue.OnExecutionDone -= AllSceneLoaded;
 
             OnTransitionSceneStartUnloaded?.Invoke();
 
-            yield return _waitForTwoSeconds;
+            yield return _waitForOneSecond;
             
             SetPrincipalScene();
 
@@ -259,6 +274,8 @@ namespace ScenesLoaderSystem.Core.Domain
                 if (scene.name == _loadingScreenSceneData.SceneName || scene.name == _emptySceneData.SceneName)
                     SceneManager.UnloadSceneAsync(scene);
             }
+
+            _isLoading = false;
         }
 
         private void SetPrincipalScene()
