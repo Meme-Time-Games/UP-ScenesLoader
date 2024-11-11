@@ -4,15 +4,9 @@ using DependencyInjector.Installers;
 
 namespace ScenesLoaderSystem
 {
-    public class SceneLoaderCommandInstaller : MultipleMonoInstaller<ICommand>
+    public class SceneLoaderCommandInstaller : SingleMonoInstaller<ICommand>
     {
-        private ISceneDataLoader _sceneDataLoader;
-
-        [Inject]
-        public void InjectSceneDataLoader(ISceneDataLoader sceneDataLoader)
-        {
-            _sceneDataLoader = sceneDataLoader;
-        }
+        [Inject] private ISceneDataLoader _sceneDataLoader;
 
         protected override ICommand GetData()
         {
