@@ -211,28 +211,38 @@ namespace ScenesLoaderSystem.Core.Domain
             yield return _waitForEndOfFrame;
             
             if (nodeCommand != null)
+            {
                 _nodeCommands.Add(nodeCommand);
-
+                InitializeScene();
+                yield break;
+            }
+            
             if (_scenesToOpenQueue.Count <= 0)
             {
-                InitializeScenes();
+                AllSceneLoaded();
                 yield break;
             }
 
             OpenNextScene();
         }
 
-        private void InitializeScenes()
+        private void InitializeScene()
         {
-            if (_nodeCommands.Count <= 0)
+            _commandQueue = new CommandQueue(_nodeCommands.ToArray());
+            _commandQueue.OnExecutionDone += InitializeNextScene;
+            _commandQueue.Execute();
+        }
+
+        private void InitializeNextScene()
+        {
+            _nodeCommands.Clear();
+            if (_scenesToOpenQueue.Count <= 0)
             {
                 AllSceneLoaded();
                 return;
             }
 
-            _commandQueue = new CommandQueue(_nodeCommands.ToArray());
-            _commandQueue.OnExecutionDone += AllSceneLoaded;
-            _commandQueue.Execute();
+            OpenNextScene();
         }
 
         private void AllSceneLoaded()
