@@ -8,9 +8,9 @@ namespace ScenesLoaderSystem
     public class LoadSceneTimer : MonoBehaviour
     {
         private ISceneDataLoader _sceneDataLoader;
-        private int _duration;
+        private float _duration;
 
-        public void Install(int duration, ISceneDataLoader sceneDataLoader)
+        public void Install(float duration, ISceneDataLoader sceneDataLoader)
         {
             _duration = duration;
             _sceneDataLoader = sceneDataLoader;
@@ -18,7 +18,7 @@ namespace ScenesLoaderSystem
             StartCoroutine(Timer());
         }
 
-        public IEnumerator Timer()
+        private IEnumerator Timer()
         {
             yield return new WaitForSeconds(_duration);
             _sceneDataLoader.Load();

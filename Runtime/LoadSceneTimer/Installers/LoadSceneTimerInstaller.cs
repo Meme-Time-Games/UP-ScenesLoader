@@ -7,10 +7,9 @@ namespace ScenesLoaderSystem
     public class LoadSceneTimerInstaller :  MonoInstaller
     {
         [Header("Config")]
-        [SerializeField] private int _duration;
+        [SerializeField] private float _duration;
         
-        [Inject]
-        private ISceneDataLoader _sceneDataLoader;
+        [Inject] private ISceneDataLoader _sceneDataLoader;
         
         public override void Install(IDIContainer diContainer)
         {

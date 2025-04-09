@@ -36,7 +36,7 @@ namespace ScenesLoaderSystem.Core.Domain
             _eventViewModel = eventViewModel;
             
             _waitForEndOfFrame = new WaitForEndOfFrame();
-            _waitForOneSecond = new WaitForSeconds(0.5f);
+            _waitForOneSecond = new WaitForSeconds(0.25f);
 
             _openScenes.Add(firstOpenSceneData);
         }
@@ -50,7 +50,7 @@ namespace ScenesLoaderSystem.Core.Domain
         {
             yield return StartCoroutine(LoadLoadingScreen());
 
-            yield return StartCoroutine(RemoveScene(_currentSceneData));
+            yield return StartCoroutine(RemoveSceneAsync(_currentSceneData));
             _openScenes.Remove(_currentSceneData);
 
             _currentSceneData = currentSceneData;
@@ -73,11 +73,6 @@ namespace ScenesLoaderSystem.Core.Domain
             yield return new WaitForEndOfFrame();
         }
         
-        private IEnumerator LoadEmptyScreenAsync()
-        {
-            yield return StartCoroutine(LoadSceneAsync(_emptySceneData.SceneName));
-        }
-        
         private IEnumerator LoadSceneAsync(string sceneName)
         {
             AsyncOperation loadLoadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -95,7 +90,7 @@ namespace ScenesLoaderSystem.Core.Domain
             
             StartCoroutine(LoadSceneAsync(sceneData, dontRemoveOpenScenes));
         }
-
+        
         private IEnumerator LoadSceneAsync(SceneData sceneData, bool dontRemoveOpenScenes = false)
         {
             _currentSceneData = sceneData;
@@ -117,6 +112,11 @@ namespace ScenesLoaderSystem.Core.Domain
             OpenScenes();
         }
         
+        private IEnumerator LoadEmptyScreenAsync()
+        {
+            yield return StartCoroutine(LoadSceneAsync(_emptySceneData.SceneName));
+        }
+        
         private IEnumerator RemoveScenes(bool removeLockedScenes)
         {
             for (int i = 0; i < _openScenes.Count; i++)
@@ -124,7 +124,7 @@ namespace ScenesLoaderSystem.Core.Domain
                 if (_openScenes[i].IsLockedScene && !removeLockedScenes || _openScenes[i].HasToKeepOpen)
                     continue;
 
-                yield return StartCoroutine(RemoveScene(_openScenes[i]));
+                yield return StartCoroutine(RemoveSceneAsync(_openScenes[i]));
 
                 _openScenes.Remove(_openScenes[i]);
 
@@ -132,7 +132,7 @@ namespace ScenesLoaderSystem.Core.Domain
             }
         }
 
-        private IEnumerator RemoveScene(SceneData openScene)
+        private IEnumerator RemoveSceneAsync(SceneData openScene)
         {
             AsyncOperation removeSceneOperation = SceneManager.UnloadSceneAsync(openScene.SceneName);
 
@@ -144,19 +144,29 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private IEnumerator RemoveScenesFromCurrentSceneData()
         {
-            SceneData[] sceneDatas = _currentSceneData.GetAllScenesDataToRemove();
+            SceneData[] scenes = _currentSceneData.GetAllScenesDataToRemove();
 
-            if (ReferenceEquals(sceneDatas, null))
+            if (ReferenceEquals(scenes, null))
                 yield return null;
 
-            foreach (var sceneData in sceneDatas)
+            foreach (var sceneData in scenes)
             {
                 if (!_openScenes.Contains(sceneData))
                     continue;
 
-                yield return StartCoroutine(RemoveScene(sceneData));
+                yield return StartCoroutine(RemoveSceneAsync(sceneData));
                 _openScenes.Remove(sceneData);
             }
+        }
+        
+        public void RemoveScene(SceneData sceneData)
+        {
+            if (!IsThisSceneDataOpened(sceneData))
+                return;
+            
+            StartCoroutine(RemoveSceneAsync(sceneData));
+
+            _openScenes.Remove(sceneData);
         }
 
         private void OpenScenes()
@@ -250,7 +260,7 @@ namespace ScenesLoaderSystem.Core.Domain
             StartCoroutine(AllSceneLoadedCoroutine());
         }
 
-        public IEnumerator AllSceneLoadedCoroutine()
+        private IEnumerator AllSceneLoadedCoroutine()
         {
             _loadingProgress = 1;
             

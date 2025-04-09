@@ -1,6 +1,6 @@
 {
-  "name": "com.mtg.scenesloader",
-  "version": "1.3.1",
+  "name": "com.custom.scenesloader",
+  "version": "1.4.0",
   "displayName": "ScenesLoader",
   "description": "",
   "unity": "2020.3",
@@ -11,7 +11,7 @@
   "keywords": [
   ],
   "author": {
-    "name": "MTG",
+    "name": "Custom",
     "email": "",
     "url": ""
   },
