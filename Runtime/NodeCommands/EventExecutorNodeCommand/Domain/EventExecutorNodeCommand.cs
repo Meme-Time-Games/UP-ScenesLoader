@@ -19,6 +19,7 @@ namespace ScenesLoaderSystem
         public override void Execute()
         {
             _onSceneLoadStartedEventViewModel.RaiseEvent();
+            _onSceneLoadDoneEventViewModel.OnEventRaised -= NotifyDoneExecution;
         }
 
         public void Dispose()
