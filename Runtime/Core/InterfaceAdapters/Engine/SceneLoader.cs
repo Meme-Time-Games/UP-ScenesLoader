@@ -32,7 +32,7 @@ namespace ScenesLoaderSystem.Core.Domain
         public Action OnAllScenesAreLoaded { get; set; }
 
         public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData, IEventViewModel onAllSceneAreLoadedEventViewModel,
-            IEventViewModel onLoadingDoneEventViewModel, int loadingDoneDealy = 0)
+            IEventViewModel onLoadingDoneEventViewModel, float loadingDoneDealy = 0)
         {
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;

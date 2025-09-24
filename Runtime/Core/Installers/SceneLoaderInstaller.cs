@@ -18,7 +18,7 @@ namespace ScenesLoaderSystem.Core.Installers
         [SerializeField] private EventViewModelSO _onLoadingDoneEventViewModelSO;
 
         [Header("Config")]
-        [SerializeField] private int _loadingDoneDelay = 0;
+        [SerializeField] private float _loadingDoneDelay = 0;
 
         public override void Install(IDIContainer diContainer)
         {
