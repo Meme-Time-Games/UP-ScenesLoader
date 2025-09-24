@@ -12,7 +12,8 @@ namespace ScenesLoaderSystem.Core.Domain
     {
         private SceneData _loadingScreenSceneData;
         private SceneData _emptySceneData;
-        private IEventViewModel _eventViewModel;
+        private IEventViewModel _onAllSceneAreLoadedEventViewModel;
+        private IEventViewModel _onLoadingDoneEventViewModel;
 
         private SceneData _currentSceneData;
         private List<SceneData> _openScenes = new List<SceneData>();
@@ -21,6 +22,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private CommandQueue _commandQueue;
         private WaitForEndOfFrame _waitForEndOfFrame;
         private WaitForSeconds _waitForOneSecond;
+        private WaitForSeconds _loadingDoneDelayWaitForSeconds;
         
         private float _loadingProgress;
         private bool _isLoading;
@@ -29,11 +31,14 @@ namespace ScenesLoaderSystem.Core.Domain
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesAreLoaded { get; set; }
 
-        public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData, IEventViewModel eventViewModel)
+        public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData, IEventViewModel onAllSceneAreLoadedEventViewModel,
+            IEventViewModel onLoadingDoneEventViewModel, int loadingDoneDealy = 0)
         {
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;
-            _eventViewModel = eventViewModel;
+            _onAllSceneAreLoadedEventViewModel = onAllSceneAreLoadedEventViewModel;
+            _onLoadingDoneEventViewModel = onLoadingDoneEventViewModel;
+            _loadingDoneDelayWaitForSeconds = new WaitForSeconds(loadingDoneDealy);
             
             _waitForEndOfFrame = new WaitForEndOfFrame();
             _waitForOneSecond = new WaitForSeconds(0.25f);
@@ -46,7 +51,7 @@ namespace ScenesLoaderSystem.Core.Domain
             StartCoroutine(RemoveCurrentAndSetPrincipalAsync(currentSceneData));
         }
 
-        public IEnumerator RemoveCurrentAndSetPrincipalAsync(SceneData currentSceneData)
+        private IEnumerator RemoveCurrentAndSetPrincipalAsync(SceneData currentSceneData)
         {
             yield return StartCoroutine(LoadLoadingScreen());
 
@@ -60,7 +65,7 @@ namespace ScenesLoaderSystem.Core.Domain
         
         private IEnumerator LoadLoadingScreen()
         {
-            if (_currentSceneData.HasToUseLoadingScreen == false)
+            if (!_currentSceneData.HasToUseLoadingScreen)
                 yield break;
             
             if(_isLoading)
@@ -276,9 +281,12 @@ namespace ScenesLoaderSystem.Core.Domain
             //Added for security reasons because not always load the scene correctly, so we need to wait the main thread
             yield return _waitForOneSecond;
 
+            _onLoadingDoneEventViewModel.RaiseEvent();
+            yield return _loadingDoneDelayWaitForSeconds;
+            
             UnloadTransitionScenes();
             
-            _eventViewModel.RaiseEvent();
+            _onAllSceneAreLoadedEventViewModel.RaiseEvent();
 
             OnAllScenesAreLoaded?.Invoke();
         }

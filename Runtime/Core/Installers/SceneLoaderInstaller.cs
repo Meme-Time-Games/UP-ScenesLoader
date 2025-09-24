@@ -14,7 +14,11 @@ namespace ScenesLoaderSystem.Core.Installers
         [SerializeField] private SceneDataSO _loadingScreenSceneDataSo;
         [SerializeField] private SceneDataSO _emptySceneDataSo;
         [SerializeField] private SceneDataSO _firstOpenSceneDataSo;
-        [SerializeField] private EventViewModelSO _eventViewModel;
+        [SerializeField] private EventViewModelSO _onAllSceneAreLoadedEventViewModelSO;
+        [SerializeField] private EventViewModelSO _onLoadingDoneEventViewModelSO;
+
+        [Header("Config")]
+        [SerializeField] private int _loadingDoneDelay = 0;
 
         public override void Install(IDIContainer diContainer)
         {
@@ -22,7 +26,8 @@ namespace ScenesLoaderSystem.Core.Installers
                 ServiceLocatorInstance.Instance.Remove<ISceneLoader>();
 
             SceneLoader sceneLoader = new GameObject("SceneLoader").AddComponent<SceneLoader>();
-            sceneLoader.Config(_loadingScreenSceneDataSo.GetSceneData(), _firstOpenSceneDataSo.GetSceneData(), _emptySceneDataSo.GetSceneData(), _eventViewModel.GetEventViewModel());
+            sceneLoader.Config(_loadingScreenSceneDataSo.GetSceneData(), _firstOpenSceneDataSo.GetSceneData(), _emptySceneDataSo.GetSceneData(),
+                _onAllSceneAreLoadedEventViewModelSO.GetEventViewModel(), _onLoadingDoneEventViewModelSO.GetEventViewModel(), _loadingDoneDelay);
 
             Transform sceneLoaderTransform = new GameObject("MonoSceneLoader").AddComponent<MonoSceneLoaderDestroyer>().transform;
             sceneLoader.transform.SetParent(sceneLoaderTransform);

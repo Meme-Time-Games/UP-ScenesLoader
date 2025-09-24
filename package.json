@@ -1,6 +1,6 @@
 {
   "name": "com.custom.scenesloader",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "displayName": "ScenesLoader",
   "description": "",
   "unity": "2020.3",
@@ -17,12 +17,11 @@
   },
   "type": "tool",
   "hideInEditor": false,
-  "samples": 
-[
-	{
-		"displayName": "Samples",
-		"description": "",
-		"path": "Samples~/ScenesLoader"
-	}
-]
+  "samples": [
+    {
+      "displayName": "Samples",
+      "description": "",
+      "path": "Samples~/ScenesLoader"
+    }
+  ]
 }
