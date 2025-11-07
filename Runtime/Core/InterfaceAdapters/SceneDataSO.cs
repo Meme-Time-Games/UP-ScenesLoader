@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ScenesLoaderSystem.Core.InterfaceAdapters
 {
-    [CreateAssetMenu(fileName = "SceneData", menuName = "ScriptableObjects/SceneData")]
+    [CreateAssetMenu(fileName = "SceneData", menuName = "ScriptableObjects/ScenesLoader/Data/SceneData")]
     public class SceneDataSO : ScriptableObject
     {
         [Header("Config")]
