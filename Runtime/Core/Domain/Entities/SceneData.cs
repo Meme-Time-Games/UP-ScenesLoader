@@ -11,6 +11,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private readonly bool _isPrincipal;
         private readonly bool _hasToCloseOthersScenes;
         private readonly bool _hasToKeepOpen;
+        private readonly bool _hasToKeepLoadingOpen;
 
         private readonly SceneData[] _scenesDataToOpen;
         private readonly SceneData[] _scenesDataToRemove;
@@ -22,8 +23,9 @@ namespace ScenesLoaderSystem.Core.Domain
         public bool IsPrincipal => _isPrincipal;
         public bool HasToCloseOthersScenes => _hasToCloseOthersScenes;
         public bool HasToKeepOpen => _hasToKeepOpen;
+        public bool HasToKeepLoadingOpen => _hasToKeepLoadingOpen;
 
-        public SceneData(string sceneName, bool hasToUseLoadingScreen, bool isLockedScene, bool hasToRemoveLockedScenes, bool isPrincipal, bool hasToCloseOthersScenes, bool hasToKeepOpen, SceneData[] scenesDataToOpen, SceneData[] scenesDataToRemove)
+        public SceneData(string sceneName, bool hasToUseLoadingScreen, bool isLockedScene, bool hasToRemoveLockedScenes, bool isPrincipal, bool hasToCloseOthersScenes, bool hasToKeepOpen, SceneData[] scenesDataToOpen, SceneData[] scenesDataToRemove, bool hasToKeepLoadingOpen)
         {
             _sceneName = sceneName;
             _hasToUseLoadingScreen = hasToUseLoadingScreen;
@@ -34,6 +36,7 @@ namespace ScenesLoaderSystem.Core.Domain
             _hasToKeepOpen = hasToKeepOpen;
             _scenesDataToOpen = scenesDataToOpen;
             _scenesDataToRemove = scenesDataToRemove;
+            _hasToKeepLoadingOpen = hasToKeepLoadingOpen;
         }
 
         public SceneData[] GetAllScenesToOpen()

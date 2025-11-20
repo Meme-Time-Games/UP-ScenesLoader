@@ -287,7 +287,8 @@ namespace ScenesLoaderSystem.Core.Domain
                 yield return _timeBetweenLoadingFinishingWaitForSeconds;
             }
             
-            UnloadTransitionScenes();
+            if(!_currentSceneData.HasToKeepLoadingOpen)
+                UnloadTransitionScenes();
             
             _onAllSceneAreLoadedEventViewModel.RaiseEvent();
 
