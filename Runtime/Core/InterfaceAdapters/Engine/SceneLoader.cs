@@ -291,6 +291,12 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private IEnumerator UnloadTransitionScenes()
         {
+            foreach (var loadingIsFinishingEventViewModel in _onLoadingIsFinishingEventViewModels)
+            {
+                loadingIsFinishingEventViewModel.RaiseEvent();
+                yield return _timeBetweenLoadingFinishingWaitForSeconds;
+            }
+            
             int totalScene = SceneManager.sceneCount;
             for (int i = 0; i < totalScene; i++)
             {
@@ -301,12 +307,6 @@ namespace ScenesLoaderSystem.Core.Domain
             }
 
             _isLoading = false;
-            
-            foreach (var loadingIsFinishingEventViewModel in _onLoadingIsFinishingEventViewModels)
-            {
-                loadingIsFinishingEventViewModel.RaiseEvent();
-                yield return _timeBetweenLoadingFinishingWaitForSeconds;
-            }
         }
 
         private void SetPrincipalScene()
