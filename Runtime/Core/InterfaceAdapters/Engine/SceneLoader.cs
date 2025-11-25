@@ -280,22 +280,16 @@ namespace ScenesLoaderSystem.Core.Domain
 
             //Added for security reasons because not always load the scene correctly, so we need to wait the main thread
             yield return _waitForOneSecond;
-
-            foreach (var loadingIsFinishingEventViewModel in _onLoadingIsFinishingEventViewModels)
-            {
-                loadingIsFinishingEventViewModel.RaiseEvent();
-                yield return _timeBetweenLoadingFinishingWaitForSeconds;
-            }
             
             if(!_currentSceneData.HasToKeepLoadingOpen)
-                UnloadTransitionScenes();
+                yield return UnloadTransitionScenes();
             
             _onAllSceneAreLoadedEventViewModel.RaiseEvent();
 
             OnAllScenesAreLoaded?.Invoke();
         }
 
-        private void UnloadTransitionScenes()
+        private IEnumerator UnloadTransitionScenes()
         {
             int totalScene = SceneManager.sceneCount;
             for (int i = 0; i < totalScene; i++)
@@ -307,6 +301,12 @@ namespace ScenesLoaderSystem.Core.Domain
             }
 
             _isLoading = false;
+            
+            foreach (var loadingIsFinishingEventViewModel in _onLoadingIsFinishingEventViewModels)
+            {
+                loadingIsFinishingEventViewModel.RaiseEvent();
+                yield return _timeBetweenLoadingFinishingWaitForSeconds;
+            }
         }
 
         private void SetPrincipalScene()
@@ -332,9 +332,8 @@ namespace ScenesLoaderSystem.Core.Domain
         
         private IEnumerator ReloadCurrentSceneAsync()
         {
-            yield return StartCoroutine( LoadSceneAsync(_loadingScreenSceneData.SceneName));
-            yield return StartCoroutine( LoadSceneAsync(_emptySceneData.SceneName));
-
+            yield return StartCoroutine(LoadSceneAsync(_loadingScreenSceneData.SceneName));
+            yield return StartCoroutine(LoadSceneAsync(_emptySceneData.SceneName));
             yield return StartCoroutine(RemoveScenes(_currentSceneData.HasToRemoveLockedScenes));
             
             LoadScene(_currentSceneData);
