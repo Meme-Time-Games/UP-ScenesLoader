@@ -73,7 +73,11 @@ namespace ScenesLoaderSystem.Core.Domain
 
             _isLoading = true;
             
-            yield return StartCoroutine(LoadSceneAsync(_loadingScreenSceneData.SceneName));
+            string loadingScreenSceneName = _loadingScreenSceneData.SceneName;
+            if(_currentSceneData.OverrideLoadingSceneData != null)
+                loadingScreenSceneName = _currentSceneData.OverrideLoadingSceneData.SceneName;
+                
+            yield return StartCoroutine(LoadSceneAsync(loadingScreenSceneName));
 
             yield return new WaitForEndOfFrame();
         }
@@ -297,12 +301,16 @@ namespace ScenesLoaderSystem.Core.Domain
                 yield return _timeBetweenLoadingFinishingWaitForSeconds;
             }
             
+            string overrideLoadingScreenSceneName = _currentSceneData.OverrideLoadingSceneData?.SceneName;
+            
             int totalScene = SceneManager.sceneCount;
             for (int i = 0; i < totalScene; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
 
-                if (scene.name == _loadingScreenSceneData.SceneName || scene.name == _emptySceneData.SceneName)
+                if (scene.name == _loadingScreenSceneData.SceneName || 
+                    scene.name == _emptySceneData.SceneName ||
+                    scene.name == overrideLoadingScreenSceneName)
                     SceneManager.UnloadSceneAsync(scene);
             }
 
@@ -332,7 +340,12 @@ namespace ScenesLoaderSystem.Core.Domain
         
         private IEnumerator ReloadCurrentSceneAsync()
         {
-            yield return StartCoroutine(LoadSceneAsync(_loadingScreenSceneData.SceneName));
+            string loadingScreenSceneName = _loadingScreenSceneData.SceneName;
+            if(_currentSceneData.OverrideLoadingSceneData != null)
+                loadingScreenSceneName = _currentSceneData.OverrideLoadingSceneData.SceneName;
+            
+            yield return StartCoroutine(LoadSceneAsync(loadingScreenSceneName));
+            
             yield return StartCoroutine(LoadSceneAsync(_emptySceneData.SceneName));
             yield return StartCoroutine(RemoveScenes(_currentSceneData.HasToRemoveLockedScenes));
             

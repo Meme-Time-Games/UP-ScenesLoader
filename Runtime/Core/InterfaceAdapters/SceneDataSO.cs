@@ -19,6 +19,7 @@ namespace ScenesLoaderSystem.Core.InterfaceAdapters
         [Header("References")]
         [SerializeField] private SceneDataSO[] _scenesDataToOpen;
         [SerializeField] private SceneDataSO[] _scenesDataToRemove;
+        [SerializeField] private SceneDataSO _overrideLoadingSceneDataSO;
         
         private SceneData _currentSceneData;
 
@@ -31,7 +32,8 @@ namespace ScenesLoaderSystem.Core.InterfaceAdapters
             SceneData[] sceneDatasToRemove = GetSceneData(_scenesDataToRemove);
                 
             _currentSceneData = new SceneData(_sceneName, _hasToUseLoadingScreen, _isLockedScene, _hasToRemoveLockedScenes,
-                _isPrincipal, _hasToCloseOthersScenes, _hasToKeepOpen, sceneDatasToOpen, sceneDatasToRemove, _hasToKeepLoadingOpen);
+                _isPrincipal, _hasToCloseOthersScenes, _hasToKeepOpen, sceneDatasToOpen, sceneDatasToRemove, 
+                _hasToKeepLoadingOpen, _overrideLoadingSceneDataSO?.GetSceneData());
 
             return _currentSceneData;
         }
