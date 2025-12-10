@@ -128,16 +128,18 @@ namespace ScenesLoaderSystem.Core.Domain
         
         private IEnumerator RemoveScenes(bool removeLockedScenes)
         {
-            for (int i = 0; i < _openScenes.Count; i++)
+            for (int i = _openScenes.Count - 1; i >= 0; i--)
             {
-                if (_openScenes[i].IsLockedScene && !removeLockedScenes || _openScenes[i].HasToKeepOpen)
+                SceneData openSceneData = _openScenes[i];
+                
+                if (openSceneData.IsLockedScene && !removeLockedScenes || openSceneData.HasToKeepOpen)
+                {
                     continue;
+                }
 
-                yield return StartCoroutine(RemoveSceneAsync(_openScenes[i]));
-
-                _openScenes.Remove(_openScenes[i]);
-
-                i--;
+                yield return StartCoroutine(RemoveSceneAsync(openSceneData));
+                
+                _openScenes.Remove(openSceneData);
             }
         }
 
@@ -145,9 +147,9 @@ namespace ScenesLoaderSystem.Core.Domain
         {
             AsyncOperation removeSceneOperation = SceneManager.UnloadSceneAsync(openScene.SceneName);
 
-            while (!removeSceneOperation.isDone)
+            if (removeSceneOperation != null)
             {
-                yield return null;
+                yield return removeSceneOperation;
             }
         }
 
