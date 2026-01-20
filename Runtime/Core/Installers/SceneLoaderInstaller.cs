@@ -19,6 +19,7 @@ namespace ScenesLoaderSystem.Core.Installers
 
         [Header("Config")]
         [SerializeField] private float _timeBetweenLoadingFinishing = 0;
+        [SerializeField] private float _timeBeforeLoading = 0;
 
         public override void Install(IDIContainer diContainer)
         {
@@ -33,7 +34,7 @@ namespace ScenesLoaderSystem.Core.Installers
             
             SceneLoader sceneLoader = new GameObject("SceneLoader").AddComponent<SceneLoader>();
             sceneLoader.Config(_loadingScreenSceneDataSo.GetSceneData(), _firstOpenSceneDataSo.GetSceneData(), _emptySceneDataSo.GetSceneData(),
-                _onAllSceneAreLoadedEventViewModelSO.GetEventViewModel(), onLoadingIsFinishingEventViewModels, _timeBetweenLoadingFinishing);
+                _onAllSceneAreLoadedEventViewModelSO.GetEventViewModel(), onLoadingIsFinishingEventViewModels, _timeBeforeLoading);
 
             Transform sceneLoaderTransform = new GameObject("MonoSceneLoader").AddComponent<MonoSceneLoaderDestroyer>().transform;
             sceneLoader.transform.SetParent(sceneLoaderTransform);

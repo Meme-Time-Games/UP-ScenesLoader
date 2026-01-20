@@ -23,6 +23,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private WaitForEndOfFrame _waitForEndOfFrame;
         private WaitForSeconds _waitForOneSecond;
         private WaitForSeconds _timeBetweenLoadingFinishingWaitForSeconds;
+        private WaitForSeconds _timeBeforeLoadingWaitForSeconds;
         
         private float _loadingProgress;
         private bool _isLoading;
@@ -32,7 +33,7 @@ namespace ScenesLoaderSystem.Core.Domain
         public Action OnAllScenesAreLoaded { get; set; }
 
         public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData, IEventViewModel onAllSceneAreLoadedEventViewModel,
-            IEventViewModel[] onLoadingIsFinishingEventViewModels, float timeBetweenLoadingFinishing = 0)
+            IEventViewModel[] onLoadingIsFinishingEventViewModels, float timeBetweenLoadingFinishing = 0, float timeBeforeLoadingWaitForSeconds = 0)
         {
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;
@@ -40,6 +41,7 @@ namespace ScenesLoaderSystem.Core.Domain
             _onLoadingIsFinishingEventViewModels = onLoadingIsFinishingEventViewModels;
             
             _timeBetweenLoadingFinishingWaitForSeconds = new WaitForSeconds(timeBetweenLoadingFinishing);
+            _timeBeforeLoadingWaitForSeconds = new WaitForSeconds(timeBeforeLoadingWaitForSeconds);
             _waitForEndOfFrame = new WaitForEndOfFrame();
             _waitForOneSecond = new WaitForSeconds(0.25f);
 
@@ -79,7 +81,7 @@ namespace ScenesLoaderSystem.Core.Domain
                 
             yield return StartCoroutine(LoadSceneAsync(loadingScreenSceneName));
 
-            yield return new WaitForEndOfFrame();
+            yield return _timeBeforeLoadingWaitForSeconds;
         }
         
         private IEnumerator LoadSceneAsync(string sceneName)
