@@ -258,6 +258,8 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private void InitializeNextScene()
         {
+            _commandQueue.OnExecutionDone -= InitializeNextScene;
+            
             _nodeCommands.Clear();
             if (_scenesToOpenQueue.Count <= 0)
             {
