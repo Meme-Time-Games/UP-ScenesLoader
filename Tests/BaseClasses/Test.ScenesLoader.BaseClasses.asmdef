@@ -1,0 +1,21 @@
+{
+    "name": "Test.ScenesLoader.BaseClasses",
+    "rootNamespace": "ScenesLoaderSystem.Tests",
+    "references": [
+        "Runtime.ScenesLoader",
+        "Runtime.CommandQueue",
+        "Runtime.Command",
+        "Runtime.MVVM.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
