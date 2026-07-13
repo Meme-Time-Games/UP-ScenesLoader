@@ -1,4 +1,5 @@
 using CommandQueues.Core;
+using ScenesLoaderSystem.Delays.InterfaceAdapters;
 using UnityEngine;
 
 namespace ScenesLoaderSystem
@@ -7,10 +8,12 @@ namespace ScenesLoaderSystem
     {
         [Header("Config")]
         [SerializeField] private float _secondsToWait;
-        
+
         protected override INodeCommand GetData()
         {
-            return new TimerNodeCommand(_secondsToWait);
+            MonoDelayProvider delayProvider = gameObject.AddComponent<MonoDelayProvider>();
+
+            return new TimerNodeCommand(_secondsToWait, delayProvider);
         }
     }
 }

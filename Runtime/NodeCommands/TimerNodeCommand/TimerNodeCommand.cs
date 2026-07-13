@@ -1,27 +1,28 @@
 using System;
-using System.Threading.Tasks;
 using CommandQueues.Core;
+using ScenesLoaderSystem.Delays.Domain;
 
 namespace ScenesLoaderSystem
 {
-    public class TimerNodeCommand : NodeCommand
+    public class TimerNodeCommand : NodeCommand, IDisposable
     {
         private readonly float _secondsToWait;
+        private readonly IDelayProvider _delayProvider;
 
-        public TimerNodeCommand(float secondsToWait)
+        public TimerNodeCommand(float secondsToWait, IDelayProvider delayProvider)
         {
             _secondsToWait = secondsToWait;
+            _delayProvider = delayProvider;
         }
 
         public override void Execute()
         {
-            WaitTime();
+            _delayProvider.Wait(_secondsToWait, NotifyDoneExecution);
         }
 
-        private async void WaitTime()
+        public void Dispose()
         {
-            await Task.Delay(TimeSpan.FromSeconds(_secondsToWait));
-            NotifyDoneExecution();
+            _delayProvider.Cancel();
         }
     }
 }
