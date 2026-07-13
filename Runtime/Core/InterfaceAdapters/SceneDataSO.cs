@@ -1,4 +1,5 @@
-﻿using ScenesLoaderSystem.Core.Domain;
+﻿using System;
+using ScenesLoaderSystem.Core.Domain;
 using UnityEngine;
 
 namespace ScenesLoaderSystem.Core.InterfaceAdapters
@@ -22,18 +23,26 @@ namespace ScenesLoaderSystem.Core.InterfaceAdapters
         [SerializeField] private SceneDataSO _overrideLoadingSceneDataSO;
         
         private SceneData _currentSceneData;
+        private bool _isBuildingSceneData;
 
         public SceneData GetSceneData()
         {
-            if (!ReferenceEquals(_currentSceneData, null)) 
+            if (!ReferenceEquals(_currentSceneData, null))
                 return _currentSceneData;
-            
+
+            if (_isBuildingSceneData)
+                throw new Exception($"SceneDataSO Error: The SceneDataSO {name} is opened by one of the SceneDataSO that it opens.");
+
+            _isBuildingSceneData = true;
+
             SceneData[] sceneDatasToOpen = GetSceneData(_scenesDataToOpen);
             SceneData[] sceneDatasToRemove = GetSceneData(_scenesDataToRemove);
-                
+
             _currentSceneData = new SceneData(_sceneName, _hasToUseLoadingScreen, _isLockedScene, _hasToRemoveLockedScenes,
-                _isPrincipal, _hasToCloseOthersScenes, _hasToKeepOpen, sceneDatasToOpen, sceneDatasToRemove, 
+                _isPrincipal, _hasToCloseOthersScenes, _hasToKeepOpen, sceneDatasToOpen, sceneDatasToRemove,
                 _hasToKeepLoadingOpen, _overrideLoadingSceneDataSO?.GetSceneData());
+
+            _isBuildingSceneData = false;
 
             return _currentSceneData;
         }
