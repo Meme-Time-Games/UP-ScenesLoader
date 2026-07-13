@@ -21,6 +21,7 @@ namespace ScenesLoaderSystem.Core.Installers
         [Header("Config")]
         [SerializeField] private float _timeBetweenLoadingFinishing = 0;
         [SerializeField] private float _timeBeforeLoading = 0;
+        [SerializeField] private float _timeBeforeUnloadingTransitionScene = 0.5f;
 
         public override void Install(IDIContainer diContainer)
         {
@@ -31,10 +32,11 @@ namespace ScenesLoaderSystem.Core.Installers
             DontDestroyOnLoad(sceneLoaderGameObject);
 
             MonoDelayProvider delayProvider = sceneLoaderGameObject.AddComponent<MonoDelayProvider>();
-            sceneLoaderGameObject.AddComponent<SceneLoaderDisposer>();
 
             SceneLoader sceneLoader =
                 new SceneLoader(new SceneManagerOperations(), delayProvider, GetSceneLoadingSettings());
+
+            sceneLoaderGameObject.AddComponent<SceneLoaderDisposer>().SetSceneLoader(sceneLoader);
 
             ServiceLocatorInstance.Instance.Add<ISceneLoader>(sceneLoader);
         }
@@ -44,7 +46,7 @@ namespace ScenesLoaderSystem.Core.Installers
             return new SceneLoadingSettings(_loadingScreenSceneDataSo.GetSceneData(),
                 _emptySceneDataSo.GetSceneData(), _firstOpenSceneDataSo.GetSceneData(),
                 _onAllSceneAreLoadedEventViewModelSO.GetEventViewModel(), GetLoadingIsFinishingEventViewModels(),
-                _timeBetweenLoadingFinishing, _timeBeforeLoading);
+                _timeBetweenLoadingFinishing, _timeBeforeLoading, _timeBeforeUnloadingTransitionScene);
         }
 
         private IEventViewModel[] GetLoadingIsFinishingEventViewModels()

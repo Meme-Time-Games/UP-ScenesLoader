@@ -12,7 +12,7 @@ namespace ScenesLoaderSystem.Core.InterfaceAdapters
             AsyncOperation loadSceneOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
             if (ReferenceEquals(loadSceneOperation, null))
-                throw new Exception($"SceneLoader Error: The Scene {sceneName} can not be loaded, check that it is added to the Build Settings.");
+                throw new Exception($"SceneLoader Error: The Scene {sceneName} is not in the Build Settings.");
 
             loadSceneOperation.completed += loadedOperation => onSceneLoaded?.Invoke();
         }
@@ -35,6 +35,13 @@ namespace ScenesLoaderSystem.Core.InterfaceAdapters
             Scene sceneToActivate = SceneManager.GetSceneByName(sceneName);
 
             SceneManager.SetActiveScene(sceneToActivate);
+        }
+
+        public bool IsSceneLoadedWithName(string sceneName)
+        {
+            Scene scene = SceneManager.GetSceneByName(sceneName);
+
+            return scene.isLoaded;
         }
     }
 }

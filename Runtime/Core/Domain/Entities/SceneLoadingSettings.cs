@@ -11,6 +11,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private readonly IEventViewModel[] _onLoadingIsFinishingEventViewModels;
         private readonly float _timeBetweenLoadingFinishing;
         private readonly float _timeBeforeLoading;
+        private readonly float _timeBeforeUnloadingTransitionScene;
 
         public SceneData LoadingScreenSceneData => _loadingScreenSceneData;
         public SceneData EmptySceneData => _emptySceneData;
@@ -19,12 +20,14 @@ namespace ScenesLoaderSystem.Core.Domain
         public IEventViewModel[] OnLoadingIsFinishingEventViewModels => _onLoadingIsFinishingEventViewModels;
         public float TimeBetweenLoadingFinishing => _timeBetweenLoadingFinishing;
         public float TimeBeforeLoading => _timeBeforeLoading;
+        public float TimeBeforeUnloadingTransitionScene => _timeBeforeUnloadingTransitionScene;
 
         public SceneLoadingSettings(SceneData loadingScreenSceneData, SceneData emptySceneData,
             SceneData firstOpenSceneData, IEventViewModel onAllScenesLoadedEventViewModel,
             IEventViewModel[] onLoadingIsFinishingEventViewModels, float timeBetweenLoadingFinishing,
-            float timeBeforeLoading)
+            float timeBeforeLoading, float timeBeforeUnloadingTransitionScene)
         {
+            _timeBeforeUnloadingTransitionScene = timeBeforeUnloadingTransitionScene;
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;
             _firstOpenSceneData = firstOpenSceneData;

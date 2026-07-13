@@ -18,7 +18,7 @@ namespace ScenesLoaderSystem.Delays.InterfaceAdapters
 
         private IEnumerator WaitCoroutine(float seconds, Action onWaitDone)
         {
-            yield return new WaitForSeconds(seconds);
+            yield return new WaitForSecondsRealtime(seconds);
 
             _runningDelay = null;
 

@@ -38,7 +38,7 @@ namespace ScenesLoaderSystem.Tests
 
             return new SceneLoadingSettings(loadingScreenSceneData, emptySceneData, _firstSceneData,
                 _onAllScenesLoadedEventViewModel, new IEventViewModel[] { _onLoadingIsFinishingEventViewModel },
-                0.5f, 0.25f);
+                0.5f, 0.25f, 0.75f);
         }
 
         [Test]
@@ -408,6 +408,115 @@ namespace ScenesLoaderSystem.Tests
             _sceneLoader.LoadScene(sceneData);
 
             Assert.Contains(0.25f, (System.Collections.ICollection)_delayProvider.RequestedSeconds);
+        }
+
+        [Test]
+        public void LoadScene_AnotherLoadThatKeepsTheOpenScenesIsRunning_KeepsTheOpenScenesOfThatLoad()
+        {
+            _sceneOperations.SetManualCompletion();
+            SceneData sceneToLoadKeepingOpenScenes = new SceneDataBuilder().WithSceneName("Game")
+                .ClosingOtherScenes().Build();
+            SceneData otherSceneData = new SceneDataBuilder().WithSceneName("Menu").Build();
+            _sceneLoader.LoadSceneKeepingOpenScenes(sceneToLoadKeepingOpenScenes);
+
+            _sceneLoader.LoadScene(otherSceneData);
+            _sceneOperations.CompleteAllOperations();
+
+            Assert.IsTrue(_sceneLoader.IsThisSceneDataOpened(_firstSceneData));
+        }
+
+        [Test]
+        public void LoadScene_TheSceneIsStillLoading_TheSceneIsAlreadyOpened()
+        {
+            _sceneOperations.SetManualCompletion();
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").Build();
+
+            _sceneLoader.LoadScene(sceneData);
+            _sceneOperations.CompleteNextOperation();
+
+            Assert.IsTrue(_sceneLoader.IsThisSceneDataOpened(sceneData));
+        }
+
+        [Test]
+        public void LoadScene_TheSceneCanNotBeLoaded_LoadsAnotherSceneAfterTheFailure()
+        {
+            _sceneOperations.SetSceneThatFailsToLoad("Broken");
+            SceneData brokenSceneData = new SceneDataBuilder().WithSceneName("Broken").Build();
+            Assert.Throws<Exception>(() => _sceneLoader.LoadScene(brokenSceneData));
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").Build();
+
+            _sceneLoader.LoadScene(sceneData);
+
+            Assert.AreEqual(1, _sceneOperations.GetTotalLoadsOfScene("Game"));
+        }
+
+        [Test]
+        public void LoadScene_TheLoadingScreenIsAlreadyInTheHierarchy_UnloadsIt()
+        {
+            _sceneOperations.SetSceneAsAlreadyLoaded(LoadingScreenSceneName);
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").WithLoadingScreen().Build();
+
+            _sceneLoader.LoadScene(sceneData);
+
+            Assert.IsFalse(_sceneOperations.IsSceneLoadedWithName(LoadingScreenSceneName));
+        }
+
+        [Test]
+        public void RemoveCurrentAndSetPrincipal_TheCurrentSceneDoesNotUseALoadingScreen_DoesNotLoadATransitionScene()
+        {
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").Build();
+            _sceneLoader.LoadScene(sceneData);
+
+            _sceneLoader.RemoveCurrentAndSetPrincipal(_firstSceneData);
+
+            Assert.AreEqual(1, _sceneOperations.GetTotalLoadsOfScene(EmptySceneName));
+        }
+
+        [Test]
+        public void LoadScene_TheTransitionSceneStartsUnloading_WaitsBeforeUnloadingIt()
+        {
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").WithLoadingScreen().Build();
+
+            _sceneLoader.LoadScene(sceneData);
+
+            Assert.Contains(0.75f, (System.Collections.ICollection)_delayProvider.RequestedSeconds);
+        }
+
+        [Test]
+        public void LoadScene_TheTransitionSceneStartsUnloading_InvokesTheActionWhileTheLoadingScreenIsOpen()
+        {
+            bool wasTheLoadingScreenOpen = false;
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").WithLoadingScreen().Build();
+            _sceneLoader.OnTransitionSceneStartUnloaded += () =>
+                wasTheLoadingScreenOpen = _sceneOperations.IsSceneLoadedWithName(LoadingScreenSceneName);
+
+            _sceneLoader.LoadScene(sceneData);
+
+            Assert.IsTrue(wasTheLoadingScreenOpen);
+        }
+
+        [Test]
+        public void LoadScene_ThePreviousSceneKeptTheLoadingOpen_LoadsTheNextScene()
+        {
+            SceneData keepingLoadingSceneData = new SceneDataBuilder().WithSceneName("Keeping").WithLoadingScreen()
+                .KeepingLoadingOpen().Build();
+            _sceneLoader.LoadScene(keepingLoadingSceneData);
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").WithLoadingScreen().Build();
+
+            _sceneLoader.LoadScene(sceneData);
+
+            Assert.AreEqual(1, _sceneOperations.GetTotalLoadsOfScene("Game"));
+        }
+
+        [Test]
+        public void LoadScene_TheSceneKeepsTheLoadingOpen_DoesNotUnloadTheLoadingScreenScene()
+        {
+            SceneData sceneData = new SceneDataBuilder().WithSceneName("Game").WithLoadingScreen()
+                .KeepingLoadingOpen().Build();
+
+            _sceneLoader.LoadScene(sceneData);
+
+            Assert.AreEqual(0, _sceneOperations.GetTotalUnloadsOfScene(LoadingScreenSceneName));
         }
     }
 }

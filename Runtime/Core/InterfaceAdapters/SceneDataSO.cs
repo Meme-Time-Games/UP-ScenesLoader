@@ -31,20 +31,31 @@ namespace ScenesLoaderSystem.Core.InterfaceAdapters
                 return _currentSceneData;
 
             if (_isBuildingSceneData)
-                throw new Exception($"SceneDataSO Error: The SceneDataSO {name} is opened by one of the SceneDataSO that it opens.");
+                throw new Exception($"SceneDataSO Error: The SceneDataSO {name} is opened by a SceneDataSO that it opens.");
 
             _isBuildingSceneData = true;
 
+            try
+            {
+                _currentSceneData = BuildSceneData();
+            }
+            finally
+            {
+                _isBuildingSceneData = false;
+            }
+
+            return _currentSceneData;
+        }
+
+        private SceneData BuildSceneData()
+        {
             SceneData[] sceneDatasToOpen = GetSceneData(_scenesDataToOpen);
             SceneData[] sceneDatasToRemove = GetSceneData(_scenesDataToRemove);
 
-            _currentSceneData = new SceneData(_sceneName, _hasToUseLoadingScreen, _isLockedScene, _hasToRemoveLockedScenes,
-                _isPrincipal, _hasToCloseOthersScenes, _hasToKeepOpen, sceneDatasToOpen, sceneDatasToRemove,
-                _hasToKeepLoadingOpen, _overrideLoadingSceneDataSO?.GetSceneData());
-
-            _isBuildingSceneData = false;
-
-            return _currentSceneData;
+            return new SceneData(_sceneName, _hasToUseLoadingScreen, _isLockedScene,
+                _hasToRemoveLockedScenes, _isPrincipal, _hasToCloseOthersScenes, _hasToKeepOpen,
+                sceneDatasToOpen, sceneDatasToRemove, _hasToKeepLoadingOpen,
+                _overrideLoadingSceneDataSO?.GetSceneData());
         }
 
         private SceneData[] GetSceneData(SceneDataSO[] sceneDataSo)

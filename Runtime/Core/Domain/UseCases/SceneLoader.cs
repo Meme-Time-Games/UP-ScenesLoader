@@ -15,6 +15,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private readonly List<INodeCommand> _nodeCommands = new List<INodeCommand>();
         private readonly Queue<SceneData> _scenesToOpenQueue = new Queue<SceneData>();
         private readonly Queue<SceneData> _scenesToRemoveQueue = new Queue<SceneData>();
+        private readonly Queue<string> _transitionScenesToUnloadQueue = new Queue<string>();
 
         private SceneData _currentSceneData;
         private SceneData _loadingSceneData;
@@ -45,6 +46,11 @@ namespace ScenesLoaderSystem.Core.Domain
 
         public void LoadScene(SceneData sceneData)
         {
+            ValidateSceneData(sceneData);
+
+            if (_isLoading)
+                return;
+
             _hasToKeepOpenScenes = false;
 
             StartLoading(sceneData);
@@ -52,22 +58,27 @@ namespace ScenesLoaderSystem.Core.Domain
 
         public void LoadSceneKeepingOpenScenes(SceneData sceneData)
         {
+            ValidateSceneData(sceneData);
+
+            if (_isLoading)
+                return;
+
             _hasToKeepOpenScenes = true;
 
             StartLoading(sceneData);
         }
 
-        private void StartLoading(SceneData sceneData)
+        private void ValidateSceneData(SceneData sceneData)
         {
             if (ReferenceEquals(sceneData, null))
                 throw new Exception("SceneLoader Error: Trying to Load a null SceneData.");
 
             if (string.IsNullOrEmpty(sceneData.SceneName))
                 throw new Exception("SceneLoader Error: Trying to Load a Scene with empty name.");
+        }
 
-            if (_isLoading)
-                return;
-
+        private void StartLoading(SceneData sceneData)
+        {
             _isLoading = true;
             _currentSceneData = sceneData;
 
@@ -93,6 +104,12 @@ namespace ScenesLoaderSystem.Core.Domain
             _isLoading = true;
             _nextCurrentSceneData = sceneData;
 
+            if (!_currentSceneData.HasToUseLoadingScreen)
+            {
+                RemoveCurrentScene();
+                return;
+            }
+
             ShowTransitionScene(RemoveCurrentScene);
         }
 
@@ -101,8 +118,10 @@ namespace ScenesLoaderSystem.Core.Domain
             _onTransitionSceneShown = onTransitionSceneShown;
             _loadingTransitionSceneName = GetTransitionSceneName();
 
-            if (_openTransitionSceneName == _loadingTransitionSceneName)
+            if (_sceneOperations.IsSceneLoadedWithName(_loadingTransitionSceneName))
             {
+                _openTransitionSceneName = _loadingTransitionSceneName;
+
                 TransitionSceneShown();
                 return;
             }
@@ -137,7 +156,31 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private void LoadTransitionScene()
         {
-            _sceneOperations.LoadSceneWithName(_loadingTransitionSceneName, TransitionSceneLoaded);
+            LoadSceneWithName(_loadingTransitionSceneName, TransitionSceneLoaded);
+        }
+
+        private void LoadSceneWithName(string sceneName, Action onSceneLoaded)
+        {
+            try
+            {
+                _sceneOperations.LoadSceneWithName(sceneName, onSceneLoaded);
+            }
+            catch (Exception)
+            {
+                ResetLoadingState();
+                throw;
+            }
+        }
+
+        private void ResetLoadingState()
+        {
+            _isLoading = false;
+            _hasToKeepOpenScenes = false;
+            _hasToForceRemoveScenes = false;
+
+            _scenesToOpenQueue.Clear();
+            _scenesToRemoveQueue.Clear();
+            _nodeCommands.Clear();
         }
 
         private void TransitionSceneLoaded()
@@ -249,8 +292,9 @@ namespace ScenesLoaderSystem.Core.Domain
 
                 _loadingSceneData = sceneDataToOpen;
                 _nodeCommands.Clear();
+                _openScenes.Add(sceneDataToOpen);
 
-                _sceneOperations.LoadSceneWithName(sceneDataToOpen.SceneName, SceneLoaded);
+                LoadSceneWithName(sceneDataToOpen.SceneName, SceneLoaded);
                 return;
             }
 
@@ -264,8 +308,6 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private void SceneReady()
         {
-            _openScenes.Add(_loadingSceneData);
-
             if (_nodeCommands.Count <= 0)
             {
                 OpenNextScene();
@@ -331,6 +373,11 @@ namespace ScenesLoaderSystem.Core.Domain
                 return;
             }
 
+            _delayProvider.Wait(_settings.TimeBeforeUnloadingTransitionScene, StartUnloadingTransitionScene);
+        }
+
+        private void StartUnloadingTransitionScene()
+        {
             _loadingIsFinishingEventIndex = 0;
 
             RaiseNextLoadingIsFinishingEvent();
@@ -363,23 +410,54 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private void UnloadTransitionScene()
         {
-            if (string.IsNullOrEmpty(_openTransitionSceneName))
+            _openTransitionSceneName = null;
+            _transitionScenesToUnloadQueue.Clear();
+
+            EnqueueTransitionSceneToUnload(_settings.LoadingScreenSceneData.SceneName);
+            EnqueueTransitionSceneToUnload(_settings.EmptySceneData.SceneName);
+            EnqueueTransitionSceneToUnload(GetOverrideLoadingSceneName());
+
+            UnloadNextTransitionScene();
+        }
+
+        private string GetOverrideLoadingSceneName()
+        {
+            if (ReferenceEquals(_currentSceneData.OverrideLoadingSceneData, null))
+                return string.Empty;
+
+            return _currentSceneData.OverrideLoadingSceneData.SceneName;
+        }
+
+        private void EnqueueTransitionSceneToUnload(string transitionSceneName)
+        {
+            if (string.IsNullOrEmpty(transitionSceneName))
+                return;
+
+            if (!_sceneOperations.IsSceneLoadedWithName(transitionSceneName))
+                return;
+
+            if (_transitionScenesToUnloadQueue.Contains(transitionSceneName))
+                return;
+
+            _transitionScenesToUnloadQueue.Enqueue(transitionSceneName);
+        }
+
+        private void UnloadNextTransitionScene()
+        {
+            if (_transitionScenesToUnloadQueue.Count <= 0)
             {
                 CompleteLoading();
                 return;
             }
 
-            string transitionSceneName = _openTransitionSceneName;
-            _openTransitionSceneName = null;
+            string transitionSceneName = _transitionScenesToUnloadQueue.Dequeue();
 
-            _sceneOperations.UnloadSceneWithName(transitionSceneName, CompleteLoading);
+            _sceneOperations.UnloadSceneWithName(transitionSceneName, UnloadNextTransitionScene);
         }
 
         private void CompleteLoading()
         {
-            _isLoading = false;
-            _hasToKeepOpenScenes = false;
-            _hasToForceRemoveScenes = false;
+            ResetLoadingState();
 
             _settings.OnAllScenesLoadedEventViewModel.RaiseEvent();
 
