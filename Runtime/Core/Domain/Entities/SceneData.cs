@@ -44,6 +44,9 @@ namespace ScenesLoaderSystem.Core.Domain
 
         public SceneData[] GetAllScenesToOpen()
         {
+            if (ReferenceEquals(_scenesDataToOpen, null))
+                return new[] { this };
+
             List<SceneData> scenesToOpen = new List<SceneData>();
 
             foreach (var sceneData in _scenesDataToOpen)
@@ -67,16 +70,9 @@ namespace ScenesLoaderSystem.Core.Domain
         public SceneData[] GetAllScenesDataToRemove()
         {
             if (ReferenceEquals(_scenesDataToRemove, null))
-                return null;
+                return new SceneData[0];
 
-            List<SceneData> scenesToRemove = new List<SceneData>();
-
-            foreach (var sceneData in _scenesDataToRemove)
-            {
-                scenesToRemove.Add(sceneData);
-            }
-
-            return scenesToRemove.ToArray();
+            return (SceneData[])_scenesDataToRemove.Clone();
         }
     }
 }
