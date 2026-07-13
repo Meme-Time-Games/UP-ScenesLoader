@@ -2,13 +2,15 @@
   "name": "com.custom.scenesloader",
   "version": "2.0.0",
   "displayName": "ScenesLoader",
-  "description": "",
-  "unity": "2020.3",
-  "unityRelease": "0b5",
+  "description": "Loads and unloads additive scenes described by SceneData assets, showing a loading screen, running the command queue of each loaded scene and notifying when all the scenes are loaded.",
+  "unity": "2021.3",
   "documentationUrl": "",
   "changelogUrl": "",
   "licensesUrl": "",
   "keywords": [
+    "scenes",
+    "loading",
+    "additive"
   ],
   "author": {
     "name": "Custom",
