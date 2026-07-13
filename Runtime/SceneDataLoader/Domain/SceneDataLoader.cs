@@ -13,9 +13,14 @@ namespace ScenesLoaderSystem
             _sceneData = sceneData;
         }
 
-        public void Load(bool dontRemoveOpenScenes = false)
+        public void Load()
         {
-            _sceneLoader.LoadScene(_sceneData, dontRemoveOpenScenes);
+            _sceneLoader.LoadScene(_sceneData);
+        }
+
+        public void LoadKeepingOpenScenes()
+        {
+            _sceneLoader.LoadSceneKeepingOpenScenes(_sceneData);
         }
 
         public void RemoveCurrentAndSetPrincipalSceneData()
@@ -23,7 +28,7 @@ namespace ScenesLoaderSystem
             _sceneLoader.RemoveCurrentAndSetPrincipal(_sceneData);
         }
 
-        public bool IsThiSceneDataOpened()
+        public bool IsThisSceneDataOpened()
         {
             return _sceneLoader.IsThisSceneDataOpened(_sceneData);
         }

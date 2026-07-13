@@ -20,19 +20,19 @@ namespace ScenesLoaderSystem.Installers
             if(ReferenceEquals(_sceneLoader, null))
                 throw new Exception("The ISceneLoader is not instantiated.");
 
-            _sceneLoader.OnAllScenesAreLoaded += Inject;
+            _sceneLoader.OnAllScenesLoaded += Inject;
         }
 
         private void Inject()
         {
-            _sceneLoader.OnAllScenesAreLoaded -= Inject;
+            _sceneLoader.OnAllScenesLoaded -= Inject;
 
             _monoInjector.InjectAll();
         }
 
         private void OnDestroy()
         {
-            _sceneLoader.OnAllScenesAreLoaded -= Inject;
+            _sceneLoader.OnAllScenesLoaded -= Inject;
         }
     }
 }

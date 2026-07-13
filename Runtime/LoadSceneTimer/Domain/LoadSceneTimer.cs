@@ -1,26 +1,25 @@
-using System;
-using System.Collections;
-using System.Threading.Tasks;
-using UnityEngine;
+using ScenesLoaderSystem.Delays.Domain;
 
 namespace ScenesLoaderSystem
 {
-    public class LoadSceneTimer : MonoBehaviour
+    public class LoadSceneTimer
     {
-        private ISceneDataLoader _sceneDataLoader;
-        private float _duration;
+        private readonly ISceneDataLoader _sceneDataLoader;
+        private readonly IDelayProvider _delayProvider;
 
-        public void Install(float duration, ISceneDataLoader sceneDataLoader)
+        public LoadSceneTimer(ISceneDataLoader sceneDataLoader, IDelayProvider delayProvider)
         {
-            _duration = duration;
             _sceneDataLoader = sceneDataLoader;
-
-            StartCoroutine(Timer());
+            _delayProvider = delayProvider;
         }
 
-        private IEnumerator Timer()
+        public void StartTimerWithDuration(float duration)
         {
-            yield return new WaitForSeconds(_duration);
+            _delayProvider.Wait(duration, LoadScene);
+        }
+
+        private void LoadScene()
+        {
             _sceneDataLoader.Load();
         }
     }

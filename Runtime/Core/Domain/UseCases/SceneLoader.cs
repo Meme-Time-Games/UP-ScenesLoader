@@ -5,7 +5,7 @@ using ScenesLoaderSystem.Delays.Domain;
 
 namespace ScenesLoaderSystem.Core.Domain
 {
-    public class SceneLoadingFlow
+    public class SceneLoader : ISceneLoader
     {
         private readonly ISceneOperations _sceneOperations;
         private readonly IDelayProvider _delayProvider;
@@ -31,7 +31,7 @@ namespace ScenesLoaderSystem.Core.Domain
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesLoaded { get; set; }
 
-        public SceneLoadingFlow(ISceneOperations sceneOperations, IDelayProvider delayProvider,
+        public SceneLoader(ISceneOperations sceneOperations, IDelayProvider delayProvider,
             SceneLoadingSettings settings)
         {
             _sceneOperations = sceneOperations;

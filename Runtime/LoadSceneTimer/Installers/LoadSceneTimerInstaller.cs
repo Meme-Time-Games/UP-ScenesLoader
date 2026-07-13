@@ -1,21 +1,24 @@
 using DependencyInjector.Core;
 using DependencyInjector.Installers;
+using ScenesLoaderSystem.Delays.InterfaceAdapters;
 using UnityEngine;
 
 namespace ScenesLoaderSystem
 {
-    public class LoadSceneTimerInstaller :  MonoInstaller
+    public class LoadSceneTimerInstaller : MonoInstaller
     {
         [Header("Config")]
         [SerializeField] private float _duration;
-        
+
         [Inject] private ISceneDataLoader _sceneDataLoader;
-        
+
         public override void Install(IDIContainer diContainer)
         {
-            LoadSceneTimer loadSceneTimer = new GameObject("LoadSceneTimer").AddComponent<LoadSceneTimer>();
-            loadSceneTimer.Install(_duration, _sceneDataLoader);
-            loadSceneTimer.transform.SetParent(transform);
+            MonoDelayProvider delayProvider = gameObject.AddComponent<MonoDelayProvider>();
+
+            LoadSceneTimer loadSceneTimer = new LoadSceneTimer(_sceneDataLoader, delayProvider);
+
+            loadSceneTimer.StartTimerWithDuration(_duration);
         }
     }
 }

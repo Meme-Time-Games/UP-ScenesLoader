@@ -1,4 +1,4 @@
-﻿using ScenesLoaderSystem.Core.Domain;
+using ScenesLoaderSystem.Core.Domain;
 
 namespace ScenesLoaderSystem
 {
@@ -13,7 +13,12 @@ namespace ScenesLoaderSystem
             _sceneData = sceneData;
         }
 
-        public void Load(bool dontRemoveOpenScenes = false)
+        public void Load()
+        {
+            _sceneLoader.RemoveCurrentAndSetPrincipal(_sceneData);
+        }
+
+        public void LoadKeepingOpenScenes()
         {
             _sceneLoader.RemoveCurrentAndSetPrincipal(_sceneData);
         }

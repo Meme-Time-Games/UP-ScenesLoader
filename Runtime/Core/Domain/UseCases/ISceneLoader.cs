@@ -6,8 +6,9 @@ namespace ScenesLoaderSystem.Core.Domain
     public interface ISceneLoader
     {
         Action OnTransitionSceneStartUnloaded { get; set; }
-        Action OnAllScenesAreLoaded { get; set; }
-        void LoadScene(SceneData sceneData, bool dontRemoveOpenScenes = false);
+        Action OnAllScenesLoaded { get; set; }
+        void LoadScene(SceneData sceneData);
+        void LoadSceneKeepingOpenScenes(SceneData sceneData);
         void RemoveScene(SceneData sceneData);
         void SetNodeCommandOfALoadedScene(INodeCommand nodeCommand);
         void RemoveCurrentAndSetPrincipal(SceneData currentSceneData);

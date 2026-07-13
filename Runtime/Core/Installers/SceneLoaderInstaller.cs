@@ -33,10 +33,10 @@ namespace ScenesLoaderSystem.Core.Installers
             MonoDelayProvider delayProvider = sceneLoaderGameObject.AddComponent<MonoDelayProvider>();
             sceneLoaderGameObject.AddComponent<SceneLoaderDisposer>();
 
-            SceneLoadingFlow sceneLoadingFlow =
-                new SceneLoadingFlow(new SceneManagerOperations(), delayProvider, GetSceneLoadingSettings());
+            SceneLoader sceneLoader =
+                new SceneLoader(new SceneManagerOperations(), delayProvider, GetSceneLoadingSettings());
 
-            ServiceLocatorInstance.Instance.Add<ISceneLoader>(new SceneLoader(sceneLoadingFlow));
+            ServiceLocatorInstance.Instance.Add<ISceneLoader>(sceneLoader);
         }
 
         private SceneLoadingSettings GetSceneLoadingSettings()

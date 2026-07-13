@@ -13,13 +13,19 @@ namespace ScenesLoaderSystem.Tests
         private int _totalReloads;
 
         public Action OnTransitionSceneStartUnloaded { get; set; }
-        public Action OnAllScenesAreLoaded { get; set; }
+        public Action OnAllScenesLoaded { get; set; }
 
         public IReadOnlyList<SceneData> LoadedScenesData => _loadedScenesData;
         public IReadOnlyList<SceneData> RemovedScenesData => _removedScenesData;
         public int TotalReloads => _totalReloads;
 
-        public void LoadScene(SceneData sceneData, bool dontRemoveOpenScenes = false)
+        public void LoadScene(SceneData sceneData)
+        {
+            _loadedScenesData.Add(sceneData);
+            _openScenesData.Add(sceneData);
+        }
+
+        public void LoadSceneKeepingOpenScenes(SceneData sceneData)
         {
             _loadedScenesData.Add(sceneData);
             _openScenesData.Add(sceneData);
@@ -52,7 +58,7 @@ namespace ScenesLoaderSystem.Tests
 
         public void RaiseAllScenesLoaded()
         {
-            OnAllScenesAreLoaded?.Invoke();
+            OnAllScenesLoaded?.Invoke();
         }
     }
 }

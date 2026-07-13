@@ -1,7 +1,8 @@
-﻿namespace ScenesLoaderSystem
+namespace ScenesLoaderSystem
 {
     public interface ISceneDataLoader
     {
-        void Load(bool dontRemoveOpenScenes = false);
+        void Load();
+        void LoadKeepingOpenScenes();
     }
 }

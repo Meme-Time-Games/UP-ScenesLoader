@@ -63,7 +63,7 @@ namespace ScenesLoaderSystem.Tests
         {
             SceneDataLoader sceneDataLoader = new SceneDataLoader(_sceneLoader, _sceneData);
 
-            Assert.IsFalse(sceneDataLoader.IsThiSceneDataOpened());
+            Assert.IsFalse(sceneDataLoader.IsThisSceneDataOpened());
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace ScenesLoaderSystem.Tests
             SceneDataLoader sceneDataLoader = new SceneDataLoader(_sceneLoader, _sceneData);
             sceneDataLoader.Load();
 
-            Assert.IsTrue(sceneDataLoader.IsThiSceneDataOpened());
+            Assert.IsTrue(sceneDataLoader.IsThisSceneDataOpened());
         }
 
         [Test]

@@ -11,14 +11,14 @@ namespace ScenesLoaderSystem.OnAllSceneAreLoaded.Domain
         {
             _sceneLoader = sceneLoader;
             
-            _sceneLoader.OnAllScenesAreLoaded += AllSceneAreLoaded;
+            _sceneLoader.OnAllScenesLoaded += AllSceneAreLoaded;
         }
 
         protected abstract void AllSceneAreLoaded();
 
         public void Dispose()
         {
-            _sceneLoader.OnAllScenesAreLoaded -= AllSceneAreLoaded;
+            _sceneLoader.OnAllScenesLoaded -= AllSceneAreLoaded;
         }
     }
 }
