@@ -17,7 +17,7 @@ namespace ScenesLoaderSystem.Installers
         {
             _sceneLoader = ServiceLocatorInstance.Instance.Get<ISceneLoader>();
 
-            if(null == _sceneLoader)
+            if(ReferenceEquals(_sceneLoader, null))
                 throw new Exception("The ISceneLoader is not instantiated.");
 
             _sceneLoader.OnAllScenesAreLoaded += Inject;
@@ -25,6 +25,8 @@ namespace ScenesLoaderSystem.Installers
 
         private void Inject()
         {
+            _sceneLoader.OnAllScenesAreLoaded -= Inject;
+
             _monoInjector.InjectAll();
         }
 

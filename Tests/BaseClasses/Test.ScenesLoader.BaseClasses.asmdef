@@ -5,7 +5,8 @@
         "Runtime.ScenesLoader",
         "Runtime.CommandQueue",
         "Runtime.Command",
-        "Runtime.MVVM.Core"
+        "Runtime.MVVM.Core",
+        "Runtime.DependencyInjector.MonoInstallers"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
