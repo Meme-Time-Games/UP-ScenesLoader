@@ -3,6 +3,7 @@ using DependencyInjector.Installers;
 using MVVM.Core;
 using ScenesLoaderSystem.Core.Domain;
 using ScenesLoaderSystem.Core.InterfaceAdapters;
+using ScenesLoaderSystem.Delays.InterfaceAdapters;
 using ServiceLocatorPattern;
 using UnityEngine;
 
@@ -23,23 +24,40 @@ namespace ScenesLoaderSystem.Core.Installers
 
         public override void Install(IDIContainer diContainer)
         {
-            if(ServiceLocatorInstance.Instance.IsContained<ISceneLoader>())
-                ServiceLocatorInstance.Instance.Remove<ISceneLoader>();
+            if (ServiceLocatorInstance.Instance.IsContained<ISceneLoader>())
+                return;
 
-            IEventViewModel[] onLoadingIsFinishingEventViewModels = new IEventViewModel[_onLoadingIsFinishingEventViewModelsSO.Length];
-            for (int i = 0; i < _onLoadingIsFinishingEventViewModelsSO.Length; i++)
+            GameObject sceneLoaderGameObject = new GameObject("SceneLoader");
+            DontDestroyOnLoad(sceneLoaderGameObject);
+
+            MonoDelayProvider delayProvider = sceneLoaderGameObject.AddComponent<MonoDelayProvider>();
+            sceneLoaderGameObject.AddComponent<SceneLoaderDisposer>();
+
+            SceneLoadingFlow sceneLoadingFlow =
+                new SceneLoadingFlow(new SceneManagerOperations(), delayProvider, GetSceneLoadingSettings());
+
+            ServiceLocatorInstance.Instance.Add<ISceneLoader>(new SceneLoader(sceneLoadingFlow));
+        }
+
+        private SceneLoadingSettings GetSceneLoadingSettings()
+        {
+            return new SceneLoadingSettings(_loadingScreenSceneDataSo.GetSceneData(),
+                _emptySceneDataSo.GetSceneData(), _firstOpenSceneDataSo.GetSceneData(),
+                _onAllSceneAreLoadedEventViewModelSO.GetEventViewModel(), GetLoadingIsFinishingEventViewModels(),
+                _timeBetweenLoadingFinishing, _timeBeforeLoading);
+        }
+
+        private IEventViewModel[] GetLoadingIsFinishingEventViewModels()
+        {
+            int totalEventViewModels = _onLoadingIsFinishingEventViewModelsSO.Length;
+            IEventViewModel[] onLoadingIsFinishingEventViewModels = new IEventViewModel[totalEventViewModels];
+
+            for (int i = 0; i < totalEventViewModels; i++)
             {
-                onLoadingIsFinishingEventViewModels[i] = _onLoadingIsFinishingEventViewModelsSO[i].GetEventViewModel();           
+                onLoadingIsFinishingEventViewModels[i] = _onLoadingIsFinishingEventViewModelsSO[i].GetEventViewModel();
             }
-            
-            SceneLoader sceneLoader = new GameObject("SceneLoader").AddComponent<SceneLoader>();
-            sceneLoader.Config(_loadingScreenSceneDataSo.GetSceneData(), _firstOpenSceneDataSo.GetSceneData(), _emptySceneDataSo.GetSceneData(),
-                _onAllSceneAreLoadedEventViewModelSO.GetEventViewModel(), onLoadingIsFinishingEventViewModels, _timeBetweenLoadingFinishing, _timeBeforeLoading);
 
-            Transform sceneLoaderTransform = new GameObject("MonoSceneLoader").AddComponent<MonoSceneLoaderDestroyer>().transform;
-            sceneLoader.transform.SetParent(sceneLoaderTransform);
-
-            ServiceLocatorInstance.Instance.Add<ISceneLoader>(sceneLoader);
+            return onLoadingIsFinishingEventViewModels;
         }
     }
 }

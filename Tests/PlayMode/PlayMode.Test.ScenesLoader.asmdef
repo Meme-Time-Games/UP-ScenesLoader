@@ -11,6 +11,7 @@
         "Runtime.DependencyInjector.MonoInstallers",
         "Runtime",
         "Runtime.ServiceLocator",
+        "Runtime.Singleton",
         "Test.ScenesLoader.BaseClasses"
     ],
     "includePlatforms": [],
