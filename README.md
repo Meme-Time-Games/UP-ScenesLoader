@@ -53,6 +53,15 @@ sceneLoader.OnAllScenesLoaded += Initialize;
 `SceneLoader` is not a `MonoBehaviour` anymore and `MonoSceneLoaderDestroyer` was deleted, both were
 created at runtime by the installer, so no scene has to be updated.
 
+The `SceneLoaderInstaller` exposes `Time Before Unloading Transition Scene`, the seconds between
+`OnTransitionSceneStartUnloaded` and the unload of the loading screen, which the 1.x loader waited
+hardcoded. It defaults to 0.5 seconds, the same time that 1.x waited, so raise it if the loading
+screen needs more time to fade out.
+
+A scene that registers its `ICommandQueue` in the loader has to do it while it is loading, on `Awake`
+or on `Start`, which is what `SceneLoadedNotifierInstaller` does. A scene that registers it later
+does not stop the loading anymore, its commands run with the next scene.
+
 ## Tests
 
 The tests run in the Unity Test Runner, `Tests/Editor` for the loading state machine, the commands
