@@ -29,6 +29,7 @@ namespace ScenesLoaderSystem.Core.Domain
         private bool _isLoading;
         private float _loadingPercentagePerScene;
         private float _sceneActivationFrameBudgetInMilliseconds;
+        private AsyncOperation _pendingActivationSceneOperation;
 
         private const float ScenePreloadCompletedProgress = 0.9f;
         private const int MaxFramesToWaitForActivationBudget = 10;
@@ -235,6 +236,7 @@ namespace ScenesLoaderSystem.Core.Domain
                 throw new Exception($"SceneLoader Error: The Scene {sceneData.SceneName} is not in the Build Settings.");
 
             loadSceneOperation.allowSceneActivation = false;
+            _pendingActivationSceneOperation = loadSceneOperation;
 
             while (loadSceneOperation.progress < ScenePreloadCompletedProgress)
                 yield return null;
@@ -242,6 +244,26 @@ namespace ScenesLoaderSystem.Core.Domain
             yield return StartCoroutine(WaitForActivationFrameBudget());
 
             loadSceneOperation.allowSceneActivation = true;
+            _pendingActivationSceneOperation = null;
+        }
+
+        private void OnDisable()
+        {
+            ActivatePendingSceneOperation();
+        }
+
+        private void OnDestroy()
+        {
+            ActivatePendingSceneOperation();
+        }
+
+        private void ActivatePendingSceneOperation()
+        {
+            if (ReferenceEquals(_pendingActivationSceneOperation, null))
+                return;
+
+            _pendingActivationSceneOperation.allowSceneActivation = true;
+            _pendingActivationSceneOperation = null;
         }
 
         private IEnumerator WaitForActivationFrameBudget()
