@@ -28,22 +28,27 @@ namespace ScenesLoaderSystem.Core.Domain
         private float _loadingProgress;
         private bool _isLoading;
         private float _loadingPercentagePerScene;
-        
+        private float _sceneActivationFrameBudgetInMilliseconds;
+
+        private const float ScenePreloadCompletedProgress = 0.9f;
+        private const int MaxFramesToWaitForActivationBudget = 10;
+
         public Action OnTransitionSceneStartUnloaded { get; set; }
         public Action OnAllScenesAreLoaded { get; set; }
 
         public void Config(SceneData loadingScreenSceneData, SceneData firstOpenSceneData, SceneData emptySceneData, IEventViewModel onAllSceneAreLoadedEventViewModel,
-            IEventViewModel[] onLoadingIsFinishingEventViewModels, float timeBetweenLoadingFinishing = 0, float timeBeforeLoadingWaitForSeconds = 0)
+            IEventViewModel[] onLoadingIsFinishingEventViewModels, float timeBetweenLoadingFinishing = 0, float timeBeforeLoadingWaitForSeconds = 0, float sceneActivationFrameBudgetInMilliseconds = 8)
         {
             _loadingScreenSceneData = loadingScreenSceneData;
             _emptySceneData = emptySceneData;
             _onAllSceneAreLoadedEventViewModel = onAllSceneAreLoadedEventViewModel;
             _onLoadingIsFinishingEventViewModels = onLoadingIsFinishingEventViewModels;
-            
+
             _timeBetweenLoadingFinishingWaitForSeconds = new WaitForSeconds(timeBetweenLoadingFinishing);
             _timeBeforeLoadingWaitForSeconds = new WaitForSeconds(timeBeforeLoadingWaitForSeconds);
             _waitForEndOfFrame = new WaitForEndOfFrame();
             _waitForOneSecond = new WaitForSeconds(0.25f);
+            _sceneActivationFrameBudgetInMilliseconds = sceneActivationFrameBudgetInMilliseconds;
 
             _openScenes.Add(firstOpenSceneData);
         }
@@ -217,9 +222,44 @@ namespace ScenesLoaderSystem.Core.Domain
 
         private void OpenScene(SceneData sceneData)
         {
-            SceneManager.LoadSceneAsync(sceneData.SceneName, LoadSceneMode.Additive);
+            StartCoroutine(OpenSceneWithActivationBudgetAsync(sceneData));
 
             _openScenes.Add(sceneData);
+        }
+
+        private IEnumerator OpenSceneWithActivationBudgetAsync(SceneData sceneData)
+        {
+            AsyncOperation loadSceneOperation = SceneManager.LoadSceneAsync(sceneData.SceneName, LoadSceneMode.Additive);
+
+            if (ReferenceEquals(loadSceneOperation, null))
+                throw new Exception($"SceneLoader Error: The Scene {sceneData.SceneName} is not in the Build Settings.");
+
+            loadSceneOperation.allowSceneActivation = false;
+
+            while (loadSceneOperation.progress < ScenePreloadCompletedProgress)
+                yield return null;
+
+            yield return StartCoroutine(WaitForActivationFrameBudget());
+
+            loadSceneOperation.allowSceneActivation = true;
+        }
+
+        private IEnumerator WaitForActivationFrameBudget()
+        {
+            int framesWaited = 0;
+
+            while (IsFrameOverActivationBudget() && framesWaited < MaxFramesToWaitForActivationBudget)
+            {
+                framesWaited++;
+                yield return null;
+            }
+        }
+
+        private bool IsFrameOverActivationBudget()
+        {
+            float frameDurationInMilliseconds = Time.deltaTime * 1000f;
+
+            return frameDurationInMilliseconds > _sceneActivationFrameBudgetInMilliseconds;
         }
 
         public void SetNodeCommandOfALoadedScene(INodeCommand nodeCommand)
